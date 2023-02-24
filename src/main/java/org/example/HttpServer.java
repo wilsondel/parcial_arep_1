@@ -101,19 +101,15 @@ public class HttpServer {
 
         // metodo para tipos de argumentos
 
+        Object myRealValue = realValue(myValue, myType );
+        Object myRealValue2 = realValue(myValue2, myType2);
+
         Class c = Class.forName(myClass);
         Method m = null;
         String response = "";
         try {
             m = c.getDeclaredMethod(myMethod,myDataType);
-            if(myType.equals("int")) {
-                response = String.valueOf(m.invoke(null,Integer.valueOf(myValue),Integer.valueOf(myValue2)));
-            } else if (myType.equals("String")) {
-                response = String.valueOf(m.invoke(null,myValue,myValue2));
-            } else if (myType.equals("double")) {
-                response = String.valueOf(m.invoke(null, Double.valueOf(myValue),myValue2));
-            }
-
+            response = String.valueOf(m.invoke(null,myRealValue,myRealValue2));
         } catch (IllegalAccessException e) {
             throw new RuntimeException(e);
         } catch (InvocationTargetException e) {
@@ -127,6 +123,19 @@ public class HttpServer {
 
         return responsePart;
 
+    }
+
+    private static Object realValue(Object myValue,String myType) {
+        Object realValue = null;
+        if(myType.equals("int")) {
+            realValue = Integer.valueOf((String) myValue);
+        } else if (myType.equals("String")) {
+            realValue = (String) myValue;
+        } else if (myType.equals("double")) {
+            realValue = Double.valueOf((String) myValue);
+        }
+
+        return realValue;
     }
 
     private static Class returnClass(String myType) {
