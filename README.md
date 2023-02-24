@@ -9,6 +9,17 @@ Decargar el proyecto, compilarlo e ingresar a:
 
 http://localhost:35000/
 
+o realizando las consultas directamente con la API con la estructura:
+
+
+http://localhost:35000/consulta?comando=COMANDO
+
+
+- Ejemplo de uso:
+ 
+
+  http://localhost:35000/consulta?comando=Class(java.lang.Math)
+
 
 En el cuadro de texto se puede usar (tener en cuenta no dejar espacios): 
 
