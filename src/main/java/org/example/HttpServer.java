@@ -56,7 +56,8 @@ public class HttpServer {
                 responsePart+= invokeImplementation(command,responsePart);
             } else if (path.contains("unaryInvoke")) {
                 responsePart+= unaryInvokeImplementation(command,responsePart);
-
+            } else if (path.contains("binaryInvoke")) {
+                responsePart+= binaryInvokeImplementation(command,responsePart);
             }
         }
 
@@ -75,6 +76,75 @@ public class HttpServer {
         clientSocket.close();
         serverSocket.close();
         }
+
+
+    }
+
+    private static String binaryInvokeImplementation(String command, String responsePart) throws ClassNotFoundException {
+
+        String javaMethod = command.substring(13).replace(")","");
+        String[] myInvoke = javaMethod.split(",");
+        String myClass = myInvoke[0];
+        String myMethod = myInvoke[1];
+        String myType = myInvoke[2];
+        String myValue = myInvoke[3];
+        String myType2 = myInvoke[4];
+        String myValue2 = myInvoke[5];
+
+        System.out.println("class:  " + myClass + " + myMethod: " + myMethod );
+        System.out.println("myType:  " + myType + " + myValue: " + myValue );
+
+
+        Class[] myDataType = new Class[2];
+        myDataType[0] = returnClass(myType);
+        myDataType[1] = returnClass(myType2);
+
+        // metodo para tipos de argumentos
+
+        Class c = Class.forName(myClass);
+        Method m = null;
+        String response = "";
+        try {
+            m = c.getDeclaredMethod(myMethod,myDataType);
+            if(myType.equals("int")) {
+                response = String.valueOf(m.invoke(null,Integer.valueOf(myValue),Integer.valueOf(myValue2)));
+            } else if (myType.equals("String")) {
+                response = String.valueOf(m.invoke(null,myValue,myValue2));
+            } else if (myType.equals("double")) {
+                response = String.valueOf(m.invoke(null, Double.valueOf(myValue),myValue2));
+            }
+
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        } catch (InvocationTargetException e) {
+            throw new RuntimeException(e);
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        }
+
+        responsePart += String.valueOf(response);
+
+
+        return responsePart;
+
+    }
+
+    private static Class returnClass(String myType) {
+
+        Class<String> s = String.class;
+        Class<Integer> i = int.class;
+        Class<Double> d = Double.class;
+
+        if(myType.equals("int")) {
+            return i;
+        } else if (myType.equals("String")) {
+            return s;
+        } else if (myType.equals("double")) {
+            return d;
+
+        }
+
+        return String.class;
 
 
     }
@@ -119,7 +189,6 @@ public class HttpServer {
                 m = c.getDeclaredMethod(myMethod,dList);
                 response = String.valueOf(m.invoke(null, Double.valueOf(myValue)));
             }
-            m.invoke(null,Integer.valueOf(myValue));
 
         } catch (IllegalAccessException e) {
             throw new RuntimeException(e);
