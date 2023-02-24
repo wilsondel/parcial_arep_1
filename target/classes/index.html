@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Form Example</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+<h1>Name of the class</h1>
+<form action="/consulta">
+    <label for="comando">comando:</label><br>
+    <input type="text" id="comando" name="comando" value="Class(java.lang.Math)"><br><br>
+    <input type="button" value="Submit" onclick="loadGetMsg()">
+</form>
+<div id="getrespmsg"></div>
+
+<script>
+        function loadGetMsg() {
+            let nameVar = document.getElementById("comando").value;
+            const xhttp = new XMLHttpRequest();
+            xhttp.onload = function() {
+                document.getElementById("getrespmsg").innerHTML =
+                this.responseText;
+            }
+            xhttp.open("GET", "/consulta?comando="+nameVar);
+            xhttp.send();
+        }
+</script>
+</body>
+</html>
