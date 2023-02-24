@@ -54,6 +54,8 @@ public class HttpServer {
                 responsePart+= classImplementation(command,responsePart);
             } else if(path.contains("invoke")) {
                 responsePart+= invokeImplementation(command,responsePart);
+            } else if (path.contains("unaryInvoke")) {
+                responsePart+= unaryInvokeImplementation(command,responsePart);
 
             }
         }
@@ -75,6 +77,60 @@ public class HttpServer {
         }
 
 
+    }
+
+    private static String unaryInvokeImplementation(String command, String responsePart) throws NoSuchMethodException, ClassNotFoundException {
+
+        String javaMethod = command.substring(12).replace(")","");
+        String[] myInvoke = javaMethod.split(",");
+        String myClass = myInvoke[0];
+        String myMethod = myInvoke[1];
+        String myType = myInvoke[2];
+        String myValue = myInvoke[3];
+
+        System.out.println("class:  " + myClass + " + myMethod: " + myMethod );
+        System.out.println("myType:  " + myType + " + myValue: " + myValue );
+
+        Class<String> s = String.class;
+        Class<Integer> i = int.class;
+        Class<Double> d = Double.class;
+        
+
+        Class[] iList = new Class[1];
+        iList[0] = i;
+        Class[] sList = new Class[1];
+        sList[0] = s;
+        Class[] dList = new Class[1];
+        dList[0] = d;
+
+
+        Class c = Class.forName(myClass);
+        Method m = null;
+        String response = "";
+        try {
+            if(myType.equals("int")) {
+                m = c.getDeclaredMethod(myMethod,iList);
+                response = String.valueOf(m.invoke(null,Integer.valueOf(myValue)));
+
+            } else if (myType.equals("String")) {
+                m = c.getDeclaredMethod(myMethod,sList);
+                response = String.valueOf(m.invoke(null,myValue));
+            } else if (myType.equals("double")) {
+                m = c.getDeclaredMethod(myMethod,dList);
+                response = String.valueOf(m.invoke(null, Double.valueOf(myValue)));
+            }
+            m.invoke(null,Integer.valueOf(myValue));
+
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        } catch (InvocationTargetException e) {
+            throw new RuntimeException(e);
+        }
+
+        responsePart += String.valueOf(response);
+
+
+        return responsePart;
     }
 
     private static String invokeImplementation(String command, String responsePart) throws ClassNotFoundException, NoSuchMethodException {
