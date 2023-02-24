@@ -2,13 +2,14 @@ package org.example;
 
 
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.*;
 import java.io.*;
 
 public class HttpServer {
 
-    public static void main(String[] args) throws IOException, ClassNotFoundException {
+    public static void main(String[] args) throws IOException, ClassNotFoundException, NoSuchMethodException {
 
         while(true) {
             ServerSocket serverSocket = null;
@@ -50,22 +51,9 @@ public class HttpServer {
         if (path.contains("/consulta?comando=")) {
             String command = path.substring(18);
             if(path.contains("Class")) {
-                String javaMethod = command.substring(6).replace(")","");
-                System.out.printf("JAVA METHOD: " + javaMethod);
-                Class c = Class.forName(javaMethod);
-                Method[] m = c.getDeclaredMethods();
-                Field[] f = c.getDeclaredFields();
-
-                for(Method method : m) {
-//                    System.out.println("Method: " + method.getName());
-                    responsePart += "<li>" + method.getName() + "</li>";
-                }
-
-                for(Field fields : f) {
-//                    System.out.println("Fields: " + fields.getName());
-                    responsePart += "<li>" + fields.getName() + "</li>";
-
-                }
+                responsePart+= classImplementation(command,responsePart);
+            } else if(path.contains("invoke")) {
+                responsePart+= invokeImplementation(command,responsePart);
 
             }
         }
@@ -87,6 +75,51 @@ public class HttpServer {
         }
 
 
+    }
+
+    private static String invokeImplementation(String command, String responsePart) throws ClassNotFoundException, NoSuchMethodException {
+
+        String javaMethod = command.substring(7).replace(")","");
+        String[] myInvoke = javaMethod.split(",");
+        String myClass = myInvoke[0];
+        String myMethod = myInvoke[1];
+
+        System.out.println("class:  " + myClass + " + myMethod: " + myMethod );
+        Class c = Class.forName(myClass);
+        Method m = c.getDeclaredMethod(myMethod);
+
+        String response = "";
+        try {
+            response = String.valueOf(m.invoke(null));
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        } catch (InvocationTargetException e) {
+            throw new RuntimeException(e);
+        }
+
+        responsePart += response;
+
+        return responsePart;
+    }
+
+    private static String classImplementation(String command, String responsePart) throws ClassNotFoundException {
+        String javaMethod = command.substring(6).replace(")","");
+        Class c = Class.forName(javaMethod);
+        Method[] m = c.getDeclaredMethods();
+        Field[] f = c.getDeclaredFields();
+
+        for(Method method : m) {
+//                    System.out.println("Method: " + method.getName());
+            responsePart += "<li>" + method.getName() + "</li>";
+        }
+
+        for(Field fields : f) {
+//                    System.out.println("Fields: " + fields.getName());
+            responsePart += "<li>" + fields.getName() + "</li>";
+
+        }
+
+        return responsePart;
     }
 
 
